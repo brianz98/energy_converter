@@ -122,16 +122,14 @@
 
     <!-- precision control (bottom) -->
     <div class="precision-bottom">
-      <label class="precision-label">
-        <span class="precision-inline">
-          <span class="precision-text">Significant digits:</span>
-          <span class="precision-controls">
-            <button id="precision-decrement" class="stepper-btn" type="button" aria-label="Decrease precision">−</button>
-            <input id="precision" type="number" min="1" max="30" step="1" value="10" />
-            <button id="precision-increment" class="stepper-btn" type="button" aria-label="Increase precision">+</button>
-          </span>
-        </span>
-      </label>
+      <div class="precision-inline">
+        <label class="precision-text" for="precision">Significant figures:</label>
+        <div class="precision-controls">
+          <button id="precision-decrement" class="stepper-btn" type="button" aria-label="Decrease precision">−</button>
+          <input id="precision" type="number" min="1" max="30" step="1" value="10" />
+          <button id="precision-increment" class="stepper-btn" type="button" aria-label="Increase precision">+</button>
+        </div>
+      </div>
     </div>
 
     <!-- <footer>
