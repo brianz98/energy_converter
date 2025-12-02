@@ -98,7 +98,12 @@ function fromHartree(h){
     'cm-1': h * CONSTS.WN_PER_EH,
     'kelvin': h * CONSTS.K_PER_EH,
     'mhz': h * CONSTS.HZ_PER_EH / 1e6,
-    'nm': 1e7 / (h * CONSTS.WN_PER_EH)
+    'nm': (function(){
+      // when hartree is zero, show 0 for consistency with other units
+      if (!isFinite(h)) return NaN;
+      if (h === 0) return 0;
+      return 1e7 / (h * CONSTS.WN_PER_EH);
+    })()
   };
 }
 
@@ -372,6 +377,19 @@ function setDiffMode(on){
       if (b) b.value = '';
       if (d) d.value = '';
     }
+    // For nm (photon wavelength) the pair A/B fields are not meaningful — hide them and their separators
+    try{
+      const a = pairA['nm'];
+      const b = pairB['nm'];
+      const d = pairD['nm'];
+      if (a){ a.style.visibility = 'hidden'; a.disabled = true; a.title = 'Wavelength A is not editable in difference mode';
+        // hide the separator after A (the '−' span) if present but keep its space
+        const s1 = a.nextElementSibling; if (s1 && s1.tagName === 'SPAN') s1.style.visibility = 'hidden'; }
+      if (b){ b.style.visibility = 'hidden'; b.disabled = true; b.title = 'Wavelength B is not editable in difference mode'; b.value = '0';
+        // hide the separator after B (the '=' span) if present but keep its space
+        const s2 = b.nextElementSibling; if (s2 && s2.tagName === 'SPAN') s2.style.visibility = 'hidden'; }
+      if (d) { d.style.visibility = 'visible'; }
+    }catch(e){/* ignore */}
     // trigger a global update using hartree A and B (or zeros)
     const jA = toHartree(Number(pairA['hartree'].value||0),'hartree');
     const jB = toHartree(Number(pairB['hartree'].value||0),'hartree');
@@ -388,6 +406,15 @@ function setDiffMode(on){
       if (!s) continue;
       s.value = isFinite(out[key]) ? formatForInput(out[key], getPrecision()) : '';
     }
+    // Re-enable / show nm pair inputs when leaving diff mode
+    try{
+      const a = pairA['nm'];
+      const b = pairB['nm'];
+      const d = pairD['nm'];
+      if (a){ a.style.visibility = 'visible'; a.disabled = false; a.title = ''; const s1 = a.nextElementSibling; if (s1 && s1.tagName === 'SPAN') s1.style.visibility = 'visible'; }
+      if (b){ b.style.visibility = 'visible'; b.disabled = false; b.title = ''; const s2 = b.nextElementSibling; if (s2 && s2.tagName === 'SPAN') s2.style.visibility = 'visible'; }
+      if (d) { d.style.visibility = 'visible'; }
+    }catch(e){/* ignore */}
   }
 }
 

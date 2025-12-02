@@ -45,12 +45,20 @@ footer{margin-top:14px;color:var(--muted);font-size:13px}
 /* style for the diff-mode label so checkbox sits directly after text */
 .diff-toggle{display:inline-flex;align-items:center;gap:8px;margin-left:0;font-weight:500;background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text);padding:6px 10px;border-radius:8px;cursor:pointer}
 .diff-toggle.active{background:var(--accent);color:#042017;border-color:transparent}
+.diff-toggle.active:hover{ /* lighter emerald on hover when active */
+  background: #34d399; /* slightly lighter emerald */
+  border-color: transparent;
+  color: #042017;
+}
 
 /* place the toggle on its own row under the precision controls */
 .diff-row{margin-top:10px;border-bottom:1px solid rgba(255,255,255,0.04);margin-bottom:18px;padding-bottom:14px}
 
 /* divider + spacing for bottom precision control */
 .precision-bottom{border-top:1px solid rgba(255,255,255,0.04);margin-top:18px;padding-top:14px}
+
+/* place precision controls and github button on same row */
+.precision-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
 
 /* precision label + controls inline */
 .precision-label{display:inline-flex;align-items:center;gap:10px}
@@ -62,6 +70,37 @@ footer{margin-top:14px;color:var(--muted);font-size:13px}
 .stepper-btn:active{transform:translateY(1px)}
 .stepper-btn[disabled]{opacity:0.45;cursor:not-allowed}
 
+/* GitHub button */
+.gh-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--text);text-decoration:none}
+.gh-btn:hover{background:rgba(255,255,255,0.03)}
+.gh-btn svg{display:block}
+
+/* subtle hover / lighten for interactive controls */
+.diff-toggle, .copy-btn, .stepper-btn, .gh-btn {
+  transition: background-color 150ms ease, border-color 150ms ease, color 120ms ease, transform 80ms ease;
+}
+
+.diff-toggle:hover,
+.copy-btn:hover,
+.stepper-btn:hover {
+  background: rgba(255,255,255,0.03);
+  border-color: rgba(255,255,255,0.08);
+}
+
+/* keep copied state visually distinct */
+.copy-btn.copied{background:var(--accent);color:#042017;border-color:transparent}
+
+/* visually indicate disabled/locked pair inputs (e.g., nm) */
+.pair input[disabled], .pair input[aria-disabled="true"]{
+  opacity: 0.65;
+  background: rgba(255,255,255,0.02);
+  cursor: not-allowed;
+  color: var(--muted);
+}
+
+/* pair layout: align A - B - D inline; allow variant where only D is shown */
+.pair{display:flex;align-items:center;gap:6px}
+
 @media (max-width:520px){form{flex-direction:column}label{min-width:unset}}
 
 /* Mobile adjustments: avoid vertical centering which can hide header and block scrolling */
@@ -69,4 +108,6 @@ footer{margin-top:14px;color:var(--muted);font-size:13px}
   html, body { height: auto; }
   body{ align-items:flex-start; padding-top:18px; padding-bottom:40px }
   .container{ margin-top:0; }
+  .precision-row{flex-direction:column;align-items:flex-start}
+  .gh-btn{margin-top:8px}
 }
