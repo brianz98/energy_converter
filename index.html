@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Quantum Energy Converter</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Quantum Chemistry Energy Converter</h1>
+    <p class="lede">Convert between common energy units used in quantum chemistry.</p>
+
+    <div id="controls">
+      <label>
+        Decimal Precision:
+        <div class="precision-controls">
+          <input id="precision" type="number" min="0" max="14" step="1" value="6" />
+          <input id="precision-slider" type="range" min="0" max="14" step="1" value="6" />
+        </div>
+      </label>
+    </div>
+
+    <section id="conversions">
+      <h2>Converters</h2>
+      <table id="conversions-table">
+        <tbody>
+          <tr>
+            <td>Hartree (Eh)</td>
+            <td><input id="in-hartree" type="number" step="any" /></td>
+          </tr>
+          <tr>
+            <td>eV</td>
+            <td><input id="in-ev" type="number" step="any" /></td>
+          </tr>
+          <tr>
+            <td>kcal / mol</td>
+            <td><input id="in-kcal_per_mol" type="number" step="any" /></td>
+          </tr>
+          <tr>
+            <td>kJ / mol</td>
+            <td><input id="in-kj_per_mol" type="number" step="any" /></td>
+          </tr>
+          <tr>
+            <td>cm⁻¹</td>
+            <td><input id="in-cm-1" type="number" step="any" /></td>
+          </tr>
+          <tr>
+            <td>K (equivalent)</td>
+            <td><input id="in-kelvin" type="number" step="any" /></td>
+          </tr>
+          <tr>
+            <td>MHz</td>
+            <td><input id="in-mhz" type="number" step="any" /></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <footer>
+      <p>Minimal converter inspired by reference constants (Hartree, eV, cm⁻¹, kB, NA).</p>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
