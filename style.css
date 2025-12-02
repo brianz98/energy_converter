@@ -63,3 +63,10 @@ footer{margin-top:14px;color:var(--muted);font-size:13px}
 .stepper-btn[disabled]{opacity:0.45;cursor:not-allowed}
 
 @media (max-width:520px){form{flex-direction:column}label{min-width:unset}}
+
+/* Mobile adjustments: avoid vertical centering which can hide header and block scrolling */
+@media (max-width:720px){
+  html, body { height: auto; }
+  body{ align-items:flex-start; padding-top:18px; padding-bottom:40px }
+  .container{ margin-top:0; }
+}
