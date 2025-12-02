@@ -1,12 +1,12 @@
 // Constants (CODATA values consistent with SciPy's constants collection)
 const CONSTS = {
-  EH_J: 4.3597447222071e-18,   // Hartree (atomic unit of energy) in J
-  EV_J: 1.602176634e-19,       // electronvolt in J
-  H: 6.62607015e-34,           // Planck constant (J s)
-  C: 299792458,                // speed of light (m/s)
-  KB: 1.380649e-23,           // Boltzmann constant (J/K)
-  NA: 6.02214076e23,          // Avogadro's number
-  J_PER_KCAL: 4184            // 1 kcal = 4184 J
+  J_PER_EH: 4.359744722206e-18,   // 1 Hartree (atomic unit of energy) in J
+  NA: 6.02214076e23,              // Avogadro's number
+  J_PER_KCAL: 4184,               // 1 kcal = 4184 J
+  EV_PER_EH: 27.211386245981,     // 1 Hartree in eV
+  WN_PER_EH: 219474.63136314,     // 1 Hartree in cm^-1
+  K_PER_EH: 315775.02480398,      // 1 Hartree in Kelvin
+  HZ_PER_EH: 6579683920499900.0   // 1 Hartree in Hz
 };
 
 const els = {
@@ -58,44 +58,39 @@ const pairD = {
 
 let isUpdating = false;
 
-// Convert input value in `unit` into Joules per particle
-function toJoulesPerParticle(val, unit){
+// Convert input value in `unit` into Hartree
+function toHartree(val, unit){
   const v = Number(val);
   switch(unit){
     case 'hartree':
-      return v * CONSTS.EH_J;
+      return v;
     case 'ev':
-      return v * CONSTS.EV_J;
+      return v / CONSTS.EV_PER_EH;
     case 'kcal_per_mol':
-      // value is kcal/mol -> J/mol -> J per particle
-      return (v * CONSTS.J_PER_KCAL) / CONSTS.NA;
+      return (v * CONSTS.J_PER_KCAL) / CONSTS.NA / CONSTS.J_PER_EH;
     case 'kj_per_mol':
-      return (v * 1000) / CONSTS.NA;
+      return (v * 1000) / CONSTS.NA / CONSTS.J_PER_EH;
     case 'cm-1':
-      // cm^-1 -> m^-1 (x100), E = h * c * (m^-1)
-      return v * 100 * CONSTS.H * CONSTS.C;
+      return v / CONSTS.WN_PER_EH;
     case 'kelvin':
-      // temperature equivalent: E = k_B * T
-      return v * CONSTS.KB;
+      return v / CONSTS.K_PER_EH;
     case 'mhz':
-      // MHz -> Hz: *1e6, E = h * nu
-      return v * 1e6 * CONSTS.H;
+      return v / (CONSTS.HZ_PER_EH / 1e6);
     default:
       return NaN;
   }
 }
 
-// Convert Joules per particle to the requested units
-function fromJoules(j){
-  const jmol = j * CONSTS.NA;
+// Convert Hartree to the requested units
+function fromHartree(h){
   return {
-    hartree: j / CONSTS.EH_J,
-    ev: j / CONSTS.EV_J,
-    'kcal_per_mol': jmol / CONSTS.J_PER_KCAL,
-    'kj_per_mol': jmol / 1000,
-    'cm-1': j / (CONSTS.H * CONSTS.C) / 100,
-    'kelvin': j / CONSTS.KB,
-    'mhz': (j / CONSTS.H) / 1e6
+    'hartree': h,
+    'ev': h * CONSTS.EV_PER_EH,
+    'kcal_per_mol': h * CONSTS.J_PER_EH * CONSTS.NA / CONSTS.J_PER_KCAL,
+    'kj_per_mol': h * CONSTS.J_PER_EH * CONSTS.NA / 1000,
+    'cm-1': h * CONSTS.WN_PER_EH,
+    'kelvin': h * CONSTS.K_PER_EH,
+    'mhz': h * CONSTS.HZ_PER_EH / 1e6
   };
 }
 
@@ -164,10 +159,10 @@ function update(){
   // are handled by per-input event listeners below.
 }
 
-function updateAllFromJ(j, skipUnit = null){
+function updateAllFromHartree(h, skipUnit = null){
   const rawPrec = Number(els.precision.value);
   const prec = Number.isFinite(rawPrec) ? Math.max(1, Math.min(30, Math.round(rawPrec))) : 10;
-  const out = fromJoules(j);
+  const out = fromHartree(h);
   isUpdating = true;
   for (const key of Object.keys(inputs)){
     const el = inputs[key];
@@ -180,12 +175,12 @@ function updateAllFromJ(j, skipUnit = null){
   isUpdating = false;
 }
 
-function updateAllPairFromJ(jA, jB, skipId = null){
+function updateAllPairFromHartree(hA, hB, skipId = null){
   const prec = getPrecision();
-  const outA_all = fromJoules(jA);
-  const outB_all = fromJoules(jB);
-  const jD = jA - jB;
-  const outD_all = fromJoules(jD);
+  const outA_all = fromHartree(hA);
+  const outB_all = fromHartree(hB);
+  const hD = hA - hB;
+  const outD_all = fromHartree(hD);
   isUpdating = true;
   for (const key of Object.keys(pairA)){
     const aEl = pairA[key];
@@ -230,15 +225,15 @@ for (const unit of Object.keys(inputs)){
         els.precision.value = String(Math.min(30, sig));
       }
     }catch(e){/* ignore */}
-    const j = toJoulesPerParticle(num, unit);
+    const h = toHartree(num, unit);
     // if diff mode active, populate pair A with this value and B=0
       if (els.diffToggle && els.diffToggle.classList.contains('active')){
       // set pair A for this unit to the entered value, keep B as-is if present
       const bVal = pairB[unit] && pairB[unit].value !== '' ? Number(pairB[unit].value) : 0;
-      const jB = toJoulesPerParticle(bVal, unit);
-      updateAllPairFromJ(j, jB, inputs[unit] ? inputs[unit].id : null);
+      const hB = toHartree(bVal, unit);
+      updateAllPairFromHartree(h, hB, inputs[unit] ? inputs[unit].id : null);
     } else {
-      updateAllFromJ(j, unit);
+      updateAllFromHartree(h, unit);
     }
   });
 }
@@ -267,10 +262,10 @@ for (const unit of Object.keys(pairA)){
           els.precision.value = String(Math.min(30, sig));
         }
       }catch(e){/* ignore */}
-      const jA = toJoulesPerParticle(numA, unit);
+      const jA = toHartree(numA, unit);
       const bVal = bEl && bEl.value !== '' ? Number(bEl.value) : 0;
-      const jB = toJoulesPerParticle(bVal, unit);
-      updateAllPairFromJ(jA, jB, ev.target.id);
+      const jB = toHartree(bVal, unit);
+      updateAllPairFromHartree(jA, jB, ev.target.id);
     });
   }
   if (bEl){
@@ -293,10 +288,10 @@ for (const unit of Object.keys(pairA)){
           els.precision.value = String(Math.min(30, sig));
         }
       }catch(e){/* ignore */}
-      const jB = toJoulesPerParticle(numB, unit);
+      const jB = toHartree(numB, unit);
       const aVal = aEl && aEl.value !== '' ? Number(aEl.value) : 0;
-      const jA = toJoulesPerParticle(aVal, unit);
-      updateAllPairFromJ(jA, jB, ev.target.id);
+      const jA = toHartree(aVal, unit);
+      updateAllPairFromHartree(jA, jB, ev.target.id);
     });
   }
 }
@@ -317,12 +312,12 @@ function onPrecisionChange(){
   if (!sourceUnit){
     // default: set hartree=1
     inputs['hartree'].value = '1';
-    updateAllFromJ(toJoulesPerParticle(1, 'hartree'), 'hartree');
+    updateAllFromHartree(toHartree(1, 'hartree'), 'hartree');
     return;
   }
   const val = Number(inputs[sourceUnit].value);
   if (!isFinite(val)) return;
-  updateAllFromJ(toJoulesPerParticle(val, sourceUnit), sourceUnit);
+  updateAllFromHartree(toHartree(val, sourceUnit), sourceUnit);
 }
 
 els.precision.addEventListener('input', onPrecisionChange);
@@ -370,16 +365,16 @@ function setDiffMode(on){
       if (d) d.value = '';
     }
     // trigger a global update using hartree A and B (or zeros)
-    const jA = toJoulesPerParticle(Number(pairA['hartree'].value||0),'hartree');
-    const jB = toJoulesPerParticle(Number(pairB['hartree'].value||0),'hartree');
-    updateAllPairFromJ(jA, jB, null);
+    const jA = toHartree(Number(pairA['hartree'].value||0),'hartree');
+    const jB = toHartree(Number(pairB['hartree'].value||0),'hartree');
+    updateAllPairFromHartree(jA, jB, null);
   } else {
     // switching back to single: set single inputs to the current difference value
     // prefer hartree difference as seed
-    const jA = toJoulesPerParticle(Number(pairA['hartree'].value||0),'hartree');
-    const jB = toJoulesPerParticle(Number(pairB['hartree'].value||0),'hartree');
+    const jA = toHartree(Number(pairA['hartree'].value||0),'hartree');
+    const jB = toHartree(Number(pairB['hartree'].value||0),'hartree');
     const jD = jA - jB;
-    const out = fromJoules(jD);
+    const out = fromHartree(jD);
     for (const key of Object.keys(inputs)){
       const s = inputs[key];
       if (!s) continue;
@@ -436,6 +431,6 @@ document.querySelectorAll('.copy-btn').forEach(btn=>{
 
 // initial seed: set hartree=1 and populate
 inputs['hartree'].value = '1';
-updateAllFromJ(toJoulesPerParticle(1, 'hartree'), 'hartree');
+updateAllFromHartree(toHartree(1, 'hartree'), 'hartree');
 
 // no DOMContentLoaded initialization required for steppers

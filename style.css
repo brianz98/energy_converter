@@ -7,8 +7,8 @@
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial}
-body{background:linear-gradient(180deg,#333b50 0%,#081226 100%);color:var(--text);display:flex;align-items:center;justify-content:center;padding:24px}
-.container{max-width:820px;width:100%;background:rgba(255, 255, 255, 0.02);padding:24px;border-radius:10px;box-shadow:0 6px 30px rgba(2,6,23,0.6)}
+body{background:linear-gradient(180deg,#232937 0%,#081226 100%);color:var(--text);display:flex;align-items:center;justify-content:center;padding:24px}
+.container{max-width:820px;width:100%;background:rgba(75, 88, 124, 0.339);padding:24px;border-radius:10px;box-shadow:0 6px 30px rgba(2,6,23,0.6)}
 h1{margin:0 0 6px;font-size:1.5rem}
 .lede{margin:0 0 18px;color:var(--muted)}
 form{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
