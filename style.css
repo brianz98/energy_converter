@@ -2,12 +2,12 @@
   --bg:#0f1721;
   --card:#0b1220;
   --muted:#9aa4b2;
-  --accent:#6ee7b7;
+  --accent:#0fbbeb;
   --text:#e6eef6;
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial}
-body{background:linear-gradient(180deg,#071025 0%,#081226 100%);color:var(--text);display:flex;align-items:center;justify-content:center;padding:24px}
+body{background:linear-gradient(180deg,#333b50 0%,#081226 100%);color:var(--text);display:flex;align-items:center;justify-content:center;padding:24px}
 .container{max-width:820px;width:100%;background:rgba(255,255,255,0.02);padding:24px;border-radius:10px;box-shadow:0 6px 30px rgba(2,6,23,0.6)}
 h1{margin:0 0 6px;font-size:1.5rem}
 .lede{margin:0 0 18px;color:var(--muted)}
@@ -47,12 +47,19 @@ footer{margin-top:14px;color:var(--muted);font-size:13px}
 .diff-toggle.active{background:var(--accent);color:#042017;border-color:transparent}
 
 /* place the toggle on its own row under the precision controls */
-.diff-row{margin-top:10px}
+.diff-row{margin-top:10px;border-bottom:1px solid rgba(255,255,255,0.04);margin-bottom:18px;padding-bottom:14px}
+
+/* divider + spacing for bottom precision control */
+.precision-bottom{border-top:1px solid rgba(255,255,255,0.04);margin-top:18px;padding-top:14px}
 
 /* precision label + controls inline */
 .precision-label{display:inline-flex;align-items:center;gap:10px}
-.precision-controls{display:inline-flex;align-items:center;gap:8px}
-.precision-controls input[type="number"]{width:64px;padding:8px 10px;height:36px}
-.precision-controls input[type="range"]{flex:1 1 240px;height:36px;align-self:center;max-width:240px}
+.precision-inline{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-size:0.88rem}
+.precision-text{margin-right:6px}
+.precision-controls{display:inline-flex;align-items:center;gap:6px}
+.precision-controls input[type="number"]{width:48px;padding:6px 8px;height:32px;font-size:0.95em}
+.stepper-btn{display:inline-flex;align-items:center;justify-content:center;min-width:36px;padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--text);cursor:pointer;font-weight:600}
+.stepper-btn:active{transform:translateY(1px)}
+.stepper-btn[disabled]{opacity:0.45;cursor:not-allowed}
 
 @media (max-width:520px){form{flex-direction:column}label{min-width:unset}}

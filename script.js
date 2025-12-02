@@ -11,7 +11,8 @@ const CONSTS = {
 
 const els = {
   precision: document.getElementById('precision'),
-  precisionSlider: document.getElementById('precision-slider')
+  precisionDec: document.getElementById('precision-decrement'),
+  precisionInc: document.getElementById('precision-increment')
 };
 
 els.diffToggle = document.getElementById('diff-toggle');
@@ -101,11 +102,16 @@ function fromJoules(j){
 function formatNumber(v, precision){
   if (!isFinite(v)) return '—';
   const abs = Math.abs(v);
+  const sig = Math.max(1, Math.min(30, Math.round(Number(precision))));
+  // For very small/large numbers prefer exponential with sig significant digits
   if ((abs !== 0 && (abs < 1e-6 || abs >= 1e8))){
-    return Number(v).toExponential(precision);
+    return Number(v).toExponential(Math.max(0, sig - 1));
   }
-  // Disable grouping to avoid thousands separators (commas)
-  return Number(v).toLocaleString(undefined, {maximumFractionDigits: precision, useGrouping: false});
+  // Use toPrecision for significant-digit formatting, then trim trailing zeros
+  let s = Number(v).toPrecision(sig);
+  if (/[eE]/.test(s)) return s;
+  s = s.replace(/(?:\.0+|(?<=\.\d*)0+)$/, '').replace(/\.$/, '');
+  return s;
 }
 
 // Format a number for putting into an <input type="number"> value.
@@ -113,14 +119,44 @@ function formatNumber(v, precision){
 function formatForInput(v, precision){
   if (!isFinite(v)) return '';
   const abs = Math.abs(v);
+  const sig = Math.max(1, Math.min(30, Math.round(Number(precision))));
   if ((abs !== 0 && (abs < 1e-6 || abs >= 1e8))){
-    // exponential with specified precision
-    return Number(v).toExponential(precision);
+    // exponential with specified significant digits
+    return Number(v).toExponential(Math.max(0, sig - 1));
   }
-  // Use fixed with requested fraction digits, then trim trailing zeros
-  const fixed = Number(v).toFixed(precision);
-  // Remove trailing zeros and optional trailing decimal point
-  return fixed.replace(/(?:\.0+|(?<=\.\d*)0+)$/, '').replace(/\.$/, '');
+  // Use toPrecision for significant-digit formatting and trim trailing zeros
+  let s = Number(v).toPrecision(sig);
+  if (/[eE]/.test(s)) return s;
+  s = s.replace(/(?:\.0+|(?<=\.\d*)0+)$/, '').replace(/\.$/, '');
+  return s;
+}
+
+// Count significant digits from a user-entered numeric string.
+// Rules:
+// - Handles plain decimals and exponential notation.
+// - Leading zeros are ignored; decimal point presence makes trailing zeros significant.
+// - For integers (no decimal point and no exponent) trailing zeros entered by the user are counted as significant.
+function countSignificantDigits(str){
+  if (typeof str !== 'string') str = String(str);
+  str = str.trim();
+  if (str === '' ) return 0;
+  // Remove sign
+  if (str[0] === '+' || str[0] === '-') str = str.slice(1);
+  // Exponential form
+  let mantissa = str;
+  const eIndex = Math.max(str.indexOf('e'), str.indexOf('E'));
+  if (eIndex !== -1){
+    mantissa = str.slice(0, eIndex);
+  }
+  // Remove decimal point
+  const hasDecimal = mantissa.indexOf('.') !== -1;
+  let digits = mantissa.replace('.', '');
+  // Remove leading zeros
+  digits = digits.replace(/^0+/, '');
+  // Edge: if all digits removed (e.g. "0" or "0.00"), count 1
+  if (digits === '') return 1;
+  // The remaining length is the significant digits (we keep trailing zeros)
+  return Math.min(30, digits.length);
 }
 
 function update(){
@@ -130,7 +166,7 @@ function update(){
 
 function updateAllFromJ(j, skipUnit = null){
   const rawPrec = Number(els.precision.value);
-  const prec = Number.isFinite(rawPrec) ? Math.max(0, Math.min(14, Math.round(rawPrec))) : 6;
+  const prec = Number.isFinite(rawPrec) ? Math.max(1, Math.min(30, Math.round(rawPrec))) : 10;
   const out = fromJoules(j);
   isUpdating = true;
   for (const key of Object.keys(inputs)){
@@ -164,7 +200,7 @@ function updateAllPairFromJ(jA, jB, skipId = null){
 
 function getPrecision(){
   const rawPrec = Number(els.precision.value);
-  return Number.isFinite(rawPrec) ? Math.max(0, Math.min(14, Math.round(rawPrec))) : 6;
+  return Number.isFinite(rawPrec) ? Math.max(1, Math.min(30, Math.round(rawPrec))) : 10;
 }
 
 // attach listeners to each input so typing in any box updates the others
@@ -186,6 +222,14 @@ for (const unit of Object.keys(inputs)){
     }
     const num = Number(text);
     if (!isFinite(num)) return;
+    // if the user typed more significant digits than current precision, increase precision
+    try{
+      const sig = countSignificantDigits(text);
+      const cur = getPrecision();
+      if (sig > cur){
+        els.precision.value = String(Math.min(30, sig));
+      }
+    }catch(e){/* ignore */}
     const j = toJoulesPerParticle(num, unit);
     // if diff mode active, populate pair A with this value and B=0
       if (els.diffToggle && els.diffToggle.classList.contains('active')){
@@ -215,6 +259,14 @@ for (const unit of Object.keys(pairA)){
       }
       const numA = Number(text);
       if (!isFinite(numA)) return;
+      // auto-upgrade precision if necessary
+      try{
+        const sig = countSignificantDigits(text);
+        const cur = getPrecision();
+        if (sig > cur){
+          els.precision.value = String(Math.min(30, sig));
+        }
+      }catch(e){/* ignore */}
       const jA = toJoulesPerParticle(numA, unit);
       const bVal = bEl && bEl.value !== '' ? Number(bEl.value) : 0;
       const jB = toJoulesPerParticle(bVal, unit);
@@ -233,6 +285,14 @@ for (const unit of Object.keys(pairA)){
       }
       const numB = Number(text);
       if (!isFinite(numB)) return;
+      // auto-upgrade precision if necessary
+      try{
+        const sig = countSignificantDigits(text);
+        const cur = getPrecision();
+        if (sig > cur){
+          els.precision.value = String(Math.min(30, sig));
+        }
+      }catch(e){/* ignore */}
       const jB = toJoulesPerParticle(numB, unit);
       const aVal = aEl && aEl.value !== '' ? Number(aEl.value) : 0;
       const jA = toJoulesPerParticle(aVal, unit);
@@ -242,12 +302,12 @@ for (const unit of Object.keys(pairA)){
 }
 // precision change: re-render from whichever input has a value (prefer hartree)
 function onPrecisionChange(){
-  // clamp precision value to integer between 0 and 14
+  // clamp precision value to integer between 1 and 30
   let p = Number(els.precision.value);
-  if (!isFinite(p)) p = 6;
-  p = Math.max(0, Math.min(14, Math.round(p)));
+  if (!isFinite(p)) p = 10;
+  p = Math.max(1, Math.min(30, Math.round(p)));
   els.precision.value = String(p);
-  if (els.precisionSlider) els.precisionSlider.value = String(p);
+  // no-op for UI buttons here; steppers update via click handlers
 
   // find first non-empty input
   let sourceUnit = null;
@@ -266,9 +326,20 @@ function onPrecisionChange(){
 }
 
 els.precision.addEventListener('input', onPrecisionChange);
-if (els.precisionSlider){
-  els.precisionSlider.addEventListener('input', (e)=>{
-    els.precision.value = e.target.value;
+// stepper buttons: decrement / increment precision
+if (els.precisionDec){
+  els.precisionDec.addEventListener('click', ()=>{
+    let p = getPrecision();
+    p = Math.max(1, p - 1);
+    els.precision.value = String(p);
+    onPrecisionChange();
+  });
+}
+if (els.precisionInc){
+  els.precisionInc.addEventListener('click', ()=>{
+    let p = getPrecision();
+    p = Math.min(30, p + 1);
+    els.precision.value = String(p);
     onPrecisionChange();
   });
 }
@@ -365,5 +436,6 @@ document.querySelectorAll('.copy-btn').forEach(btn=>{
 
 // initial seed: set hartree=1 and populate
 inputs['hartree'].value = '1';
-if (els.precisionSlider) els.precisionSlider.value = els.precision.value;
 updateAllFromJ(toJoulesPerParticle(1, 'hartree'), 'hartree');
+
+// no DOMContentLoaded initialization required for steppers

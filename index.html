@@ -9,28 +9,17 @@
 <body>
   <main class="container">
     <h1>Quantum Chemistry Energy Converter</h1>
-    <p class="lede">Convert between common energy units used in quantum chemistry.</p>
 
-    <div id="controls">
-      <label>
-        Decimal Precision:
-        <div class="precision-controls">
-          <input id="precision" type="number" min="0" max="14" step="1" value="6" />
-          <input id="precision-slider" type="range" min="0" max="14" step="1" value="6" />
-        </div>
-      </label>
-    </div>
-      </div>
+    <!-- precision control moved to bottom -->
       <div class="diff-row">
         <button id="diff-toggle" class="diff-toggle" type="button" aria-pressed="false">Energy difference mode</button>
       </div>
 
     <section id="conversions">
-      <h2>Converters</h2>
       <table id="conversions-table">
         <tbody>
           <tr>
-            <td>Hartree (Eh)</td>
+            <td>Hartree (<em>E</em><sub>h</sub>)</td>
             <td>
               <div class="single"><input id="in-hartree" type="number" step="any" /></div>
               <div class="pair" style="display:none">
@@ -58,7 +47,21 @@
             <td class="copy-col"><button class="copy-btn" data-unit="ev" type="button">Copy</button></td>
           </tr>
           <tr>
-            <td>kcal / mol</td>
+            <td>cm<sup>-1</sup></td>
+            <td>
+              <div class="single"><input id="in-cm-1" type="number" step="any" /></div>
+              <div class="pair" style="display:none">
+                <input id="in-cm-1-a" type="number" step="any" />
+                <span style="padding:0 6px">−</span>
+                <input id="in-cm-1-b" type="number" step="any" />
+                <span style="padding:0 6px">=</span>
+                <input id="in-cm-1-d" type="text" readonly />
+              </div>
+            </td>
+            <td class="copy-col"><button class="copy-btn" data-unit="cm-1" type="button">Copy</button></td>
+          </tr>
+          <tr>
+            <td>kcal mol<sup>-1</sup></td>
             <td>
               <div class="single"><input id="in-kcal_per_mol" type="number" step="any" /></div>
               <div class="pair" style="display:none">
@@ -72,7 +75,7 @@
             <td class="copy-col"><button class="copy-btn" data-unit="kcal_per_mol" type="button">Copy</button></td>
           </tr>
           <tr>
-            <td>kJ / mol</td>
+            <td>kJ mol<sup>-1</sup></td>
             <td>
               <div class="single"><input id="in-kj_per_mol" type="number" step="any" /></div>
               <div class="pair" style="display:none">
@@ -84,20 +87,6 @@
               </div>
             </td>
             <td class="copy-col"><button class="copy-btn" data-unit="kj_per_mol" type="button">Copy</button></td>
-          </tr>
-          <tr>
-            <td>cm⁻¹</td>
-            <td>
-              <div class="single"><input id="in-cm-1" type="number" step="any" /></div>
-              <div class="pair" style="display:none">
-                <input id="in-cm-1-a" type="number" step="any" />
-                <span style="padding:0 6px">−</span>
-                <input id="in-cm-1-b" type="number" step="any" />
-                <span style="padding:0 6px">=</span>
-                <input id="in-cm-1-d" type="text" readonly />
-              </div>
-            </td>
-            <td class="copy-col"><button class="copy-btn" data-unit="cm-1" type="button">Copy</button></td>
           </tr>
           <tr>
             <td>K (equivalent)</td>
@@ -130,6 +119,20 @@
         </tbody>
       </table>
     </section>
+
+    <!-- precision control (bottom) -->
+    <div class="precision-bottom">
+      <label class="precision-label">
+        <span class="precision-inline">
+          <span class="precision-text">Significant digits:</span>
+          <span class="precision-controls">
+            <button id="precision-decrement" class="stepper-btn" type="button" aria-label="Decrease precision">−</button>
+            <input id="precision" type="number" min="1" max="30" step="1" value="10" />
+            <button id="precision-increment" class="stepper-btn" type="button" aria-label="Increase precision">+</button>
+          </span>
+        </span>
+      </label>
+    </div>
 
     <!-- <footer>
       <p></p>
