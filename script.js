@@ -24,7 +24,8 @@ const inputs = {
   'kj_per_mol': document.getElementById('in-kj_per_mol'),
   'cm-1': document.getElementById('in-cm-1'),
   'kelvin': document.getElementById('in-kelvin'),
-  'mhz': document.getElementById('in-mhz')
+  'mhz': document.getElementById('in-mhz'),
+  'nm': document.getElementById('in-nm')
 };
 
 // Pair-mode inputs: a, b (editable) and d (difference, readonly)
@@ -35,7 +36,8 @@ const pairA = {
   'kj_per_mol': document.getElementById('in-kj_per_mol-a'),
   'cm-1': document.getElementById('in-cm-1-a'),
   'kelvin': document.getElementById('in-kelvin-a'),
-  'mhz': document.getElementById('in-mhz-a')
+  'mhz': document.getElementById('in-mhz-a'),
+  'nm': document.getElementById('in-nm-a')
 };
 const pairB = {
   'hartree': document.getElementById('in-hartree-b'),
@@ -44,7 +46,8 @@ const pairB = {
   'kj_per_mol': document.getElementById('in-kj_per_mol-b'),
   'cm-1': document.getElementById('in-cm-1-b'),
   'kelvin': document.getElementById('in-kelvin-b'),
-  'mhz': document.getElementById('in-mhz-b')
+  'mhz': document.getElementById('in-mhz-b'),
+  'nm': document.getElementById('in-nm-b')
 };
 const pairD = {
   'hartree': document.getElementById('in-hartree-d'),
@@ -53,7 +56,8 @@ const pairD = {
   'kj_per_mol': document.getElementById('in-kj_per_mol-d'),
   'cm-1': document.getElementById('in-cm-1-d'),
   'kelvin': document.getElementById('in-kelvin-d'),
-  'mhz': document.getElementById('in-mhz-d')
+  'mhz': document.getElementById('in-mhz-d'),
+  'nm': document.getElementById('in-nm-d')
 };
 
 let isUpdating = false;
@@ -76,6 +80,9 @@ function toHartree(val, unit){
       return v / CONSTS.K_PER_EH;
     case 'mhz':
       return v / (CONSTS.HZ_PER_EH / 1e6);
+    case 'nm':
+      const wn = 0.01 / (v * 1e-9); // convert nm to cm-1
+      return wn / CONSTS.WN_PER_EH;
     default:
       return NaN;
   }
@@ -90,7 +97,8 @@ function fromHartree(h){
     'kj_per_mol': h * CONSTS.J_PER_EH * CONSTS.NA / 1000,
     'cm-1': h * CONSTS.WN_PER_EH,
     'kelvin': h * CONSTS.K_PER_EH,
-    'mhz': h * CONSTS.HZ_PER_EH / 1e6
+    'mhz': h * CONSTS.HZ_PER_EH / 1e6,
+    'nm': 1e7 / (h * CONSTS.WN_PER_EH)
   };
 }
 
