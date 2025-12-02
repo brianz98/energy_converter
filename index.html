@@ -20,6 +20,10 @@
         </div>
       </label>
     </div>
+      </div>
+      <div class="diff-row">
+        <button id="diff-toggle" class="diff-toggle" type="button" aria-pressed="false">Energy difference mode</button>
+      </div>
 
     <section id="conversions">
       <h2>Converters</h2>
@@ -27,39 +31,109 @@
         <tbody>
           <tr>
             <td>Hartree (Eh)</td>
-            <td><input id="in-hartree" type="number" step="any" /></td>
+            <td>
+              <div class="single"><input id="in-hartree" type="number" step="any" /></div>
+              <div class="pair" style="display:none">
+                <input id="in-hartree-a" type="number" step="any" />
+                <span style="padding:0 6px">−</span>
+                <input id="in-hartree-b" type="number" step="any" />
+                <span style="padding:0 6px">=</span>
+                <input id="in-hartree-d" type="text" readonly />
+              </div>
+            </td>
+            <td class="copy-col"><button class="copy-btn" data-unit="hartree" type="button">Copy</button></td>
           </tr>
           <tr>
             <td>eV</td>
-            <td><input id="in-ev" type="number" step="any" /></td>
+            <td>
+              <div class="single"><input id="in-ev" type="number" step="any" /></div>
+              <div class="pair" style="display:none">
+                <input id="in-ev-a" type="number" step="any" />
+                <span style="padding:0 6px">−</span>
+                <input id="in-ev-b" type="number" step="any" />
+                <span style="padding:0 6px">=</span>
+                <input id="in-ev-d" type="text" readonly />
+              </div>
+            </td>
+            <td class="copy-col"><button class="copy-btn" data-unit="ev" type="button">Copy</button></td>
           </tr>
           <tr>
             <td>kcal / mol</td>
-            <td><input id="in-kcal_per_mol" type="number" step="any" /></td>
+            <td>
+              <div class="single"><input id="in-kcal_per_mol" type="number" step="any" /></div>
+              <div class="pair" style="display:none">
+                <input id="in-kcal_per_mol-a" type="number" step="any" />
+                <span style="padding:0 6px">−</span>
+                <input id="in-kcal_per_mol-b" type="number" step="any" />
+                <span style="padding:0 6px">=</span>
+                <input id="in-kcal_per_mol-d" type="text" readonly />
+              </div>
+            </td>
+            <td class="copy-col"><button class="copy-btn" data-unit="kcal_per_mol" type="button">Copy</button></td>
           </tr>
           <tr>
             <td>kJ / mol</td>
-            <td><input id="in-kj_per_mol" type="number" step="any" /></td>
+            <td>
+              <div class="single"><input id="in-kj_per_mol" type="number" step="any" /></div>
+              <div class="pair" style="display:none">
+                <input id="in-kj_per_mol-a" type="number" step="any" />
+                <span style="padding:0 6px">−</span>
+                <input id="in-kj_per_mol-b" type="number" step="any" />
+                <span style="padding:0 6px">=</span>
+                <input id="in-kj_per_mol-d" type="text" readonly />
+              </div>
+            </td>
+            <td class="copy-col"><button class="copy-btn" data-unit="kj_per_mol" type="button">Copy</button></td>
           </tr>
           <tr>
             <td>cm⁻¹</td>
-            <td><input id="in-cm-1" type="number" step="any" /></td>
+            <td>
+              <div class="single"><input id="in-cm-1" type="number" step="any" /></div>
+              <div class="pair" style="display:none">
+                <input id="in-cm-1-a" type="number" step="any" />
+                <span style="padding:0 6px">−</span>
+                <input id="in-cm-1-b" type="number" step="any" />
+                <span style="padding:0 6px">=</span>
+                <input id="in-cm-1-d" type="text" readonly />
+              </div>
+            </td>
+            <td class="copy-col"><button class="copy-btn" data-unit="cm-1" type="button">Copy</button></td>
           </tr>
           <tr>
             <td>K (equivalent)</td>
-            <td><input id="in-kelvin" type="number" step="any" /></td>
+            <td>
+              <div class="single"><input id="in-kelvin" type="number" step="any" /></div>
+              <div class="pair" style="display:none">
+                <input id="in-kelvin-a" type="number" step="any" />
+                <span style="padding:0 6px">−</span>
+                <input id="in-kelvin-b" type="number" step="any" />
+                <span style="padding:0 6px">=</span>
+                <input id="in-kelvin-d" type="text" readonly />
+              </div>
+            </td>
+            <td class="copy-col"><button class="copy-btn" data-unit="kelvin" type="button">Copy</button></td>
           </tr>
           <tr>
             <td>MHz</td>
-            <td><input id="in-mhz" type="number" step="any" /></td>
+            <td>
+              <div class="single"><input id="in-mhz" type="number" step="any" /></div>
+              <div class="pair" style="display:none">
+                <input id="in-mhz-a" type="number" step="any" />
+                <span style="padding:0 6px">−</span>
+                <input id="in-mhz-b" type="number" step="any" />
+                <span style="padding:0 6px">=</span>
+                <input id="in-mhz-d" type="text" readonly />
+              </div>
+            </td>
+            <td class="copy-col"><button class="copy-btn" data-unit="mhz" type="button">Copy</button></td>
           </tr>
         </tbody>
       </table>
     </section>
 
-    <footer>
-      <p>Minimal converter inspired by reference constants (Hartree, eV, cm⁻¹, kB, NA).</p>
-    </footer>
+    <!-- <footer>
+      <p></p>
+    </footer> -->
   </main>
 
   <script src="script.js"></script>

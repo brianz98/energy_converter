@@ -14,6 +14,8 @@ const els = {
   precisionSlider: document.getElementById('precision-slider')
 };
 
+els.diffToggle = document.getElementById('diff-toggle');
+
 const inputs = {
   'hartree': document.getElementById('in-hartree'),
   'ev': document.getElementById('in-ev'),
@@ -22,6 +24,35 @@ const inputs = {
   'cm-1': document.getElementById('in-cm-1'),
   'kelvin': document.getElementById('in-kelvin'),
   'mhz': document.getElementById('in-mhz')
+};
+
+// Pair-mode inputs: a, b (editable) and d (difference, readonly)
+const pairA = {
+  'hartree': document.getElementById('in-hartree-a'),
+  'ev': document.getElementById('in-ev-a'),
+  'kcal_per_mol': document.getElementById('in-kcal_per_mol-a'),
+  'kj_per_mol': document.getElementById('in-kj_per_mol-a'),
+  'cm-1': document.getElementById('in-cm-1-a'),
+  'kelvin': document.getElementById('in-kelvin-a'),
+  'mhz': document.getElementById('in-mhz-a')
+};
+const pairB = {
+  'hartree': document.getElementById('in-hartree-b'),
+  'ev': document.getElementById('in-ev-b'),
+  'kcal_per_mol': document.getElementById('in-kcal_per_mol-b'),
+  'kj_per_mol': document.getElementById('in-kj_per_mol-b'),
+  'cm-1': document.getElementById('in-cm-1-b'),
+  'kelvin': document.getElementById('in-kelvin-b'),
+  'mhz': document.getElementById('in-mhz-b')
+};
+const pairD = {
+  'hartree': document.getElementById('in-hartree-d'),
+  'ev': document.getElementById('in-ev-d'),
+  'kcal_per_mol': document.getElementById('in-kcal_per_mol-d'),
+  'kj_per_mol': document.getElementById('in-kj_per_mol-d'),
+  'cm-1': document.getElementById('in-cm-1-d'),
+  'kelvin': document.getElementById('in-kelvin-d'),
+  'mhz': document.getElementById('in-mhz-d')
 };
 
 let isUpdating = false;
@@ -113,6 +144,29 @@ function updateAllFromJ(j, skipUnit = null){
   isUpdating = false;
 }
 
+function updateAllPairFromJ(jA, jB, skipId = null){
+  const prec = getPrecision();
+  const outA_all = fromJoules(jA);
+  const outB_all = fromJoules(jB);
+  const jD = jA - jB;
+  const outD_all = fromJoules(jD);
+  isUpdating = true;
+  for (const key of Object.keys(pairA)){
+    const aEl = pairA[key];
+    const bEl = pairB[key];
+    const dEl = pairD[key];
+    if (aEl && (!skipId || skipId !== aEl.id)) aEl.value = isFinite(outA_all[key]) ? formatForInput(outA_all[key], prec) : '';
+    if (bEl && (!skipId || skipId !== bEl.id)) bEl.value = isFinite(outB_all[key]) ? formatForInput(outB_all[key], prec) : '';
+    if (dEl) dEl.value = isFinite(outD_all[key]) ? formatForInput(outD_all[key], prec) : '';
+  }
+  isUpdating = false;
+}
+
+function getPrecision(){
+  const rawPrec = Number(els.precision.value);
+  return Number.isFinite(rawPrec) ? Math.max(0, Math.min(14, Math.round(rawPrec))) : 6;
+}
+
 // attach listeners to each input so typing in any box updates the others
 for (const unit of Object.keys(inputs)){
   const el = inputs[unit];
@@ -133,8 +187,58 @@ for (const unit of Object.keys(inputs)){
     const num = Number(text);
     if (!isFinite(num)) return;
     const j = toJoulesPerParticle(num, unit);
-    updateAllFromJ(j, unit);
+    // if diff mode active, populate pair A with this value and B=0
+      if (els.diffToggle && els.diffToggle.classList.contains('active')){
+      // set pair A for this unit to the entered value, keep B as-is if present
+      const bVal = pairB[unit] && pairB[unit].value !== '' ? Number(pairB[unit].value) : 0;
+      const jB = toJoulesPerParticle(bVal, unit);
+      updateAllPairFromJ(j, jB, inputs[unit] ? inputs[unit].id : null);
+    } else {
+      updateAllFromJ(j, unit);
+    }
   });
+}
+
+// pair mode listeners: for A and B inputs
+for (const unit of Object.keys(pairA)){
+  const aEl = pairA[unit];
+  const bEl = pairB[unit];
+  if (aEl){
+    aEl.addEventListener('input', (ev)=>{
+      if (isUpdating) return;
+      const text = ev.target.value;
+      if (text === '' || text === null){
+        isUpdating = true;
+        for (const k of Object.keys(pairA)){ if (k===unit) continue; pairD[k].value = ''; }
+        isUpdating = false;
+        return;
+      }
+      const numA = Number(text);
+      if (!isFinite(numA)) return;
+      const jA = toJoulesPerParticle(numA, unit);
+      const bVal = bEl && bEl.value !== '' ? Number(bEl.value) : 0;
+      const jB = toJoulesPerParticle(bVal, unit);
+      updateAllPairFromJ(jA, jB, ev.target.id);
+    });
+  }
+  if (bEl){
+    bEl.addEventListener('input', (ev)=>{
+      if (isUpdating) return;
+      const text = ev.target.value;
+      if (text === '' || text === null){
+        isUpdating = true;
+        for (const k of Object.keys(pairB)){ if (k===unit) continue; pairD[k].value = ''; }
+        isUpdating = false;
+        return;
+      }
+      const numB = Number(text);
+      if (!isFinite(numB)) return;
+      const jB = toJoulesPerParticle(numB, unit);
+      const aVal = aEl && aEl.value !== '' ? Number(aEl.value) : 0;
+      const jA = toJoulesPerParticle(aVal, unit);
+      updateAllPairFromJ(jA, jB, ev.target.id);
+    });
+  }
 }
 // precision change: re-render from whichever input has a value (prefer hartree)
 function onPrecisionChange(){
@@ -168,6 +272,96 @@ if (els.precisionSlider){
     onPrecisionChange();
   });
 }
+
+// Toggle diff (pair) mode visibility and initialization
+function setDiffMode(on){
+  for (const key of Object.keys(inputs)){
+    const singleWrap = inputs[key] ? inputs[key].parentElement : null;
+    // in our structure single input is directly inside a div.single
+    if (singleWrap && singleWrap.classList.contains('single')){
+      singleWrap.style.display = on ? 'none' : '';
+      const pairWrap = singleWrap.nextElementSibling;
+      if (pairWrap && pairWrap.classList.contains('pair')){
+        pairWrap.style.display = on ? '' : 'none';
+      }
+    }
+  }
+  if (on){
+    // initialize pair inputs: set A from single, B=0 if empty
+    for (const key of Object.keys(inputs)){
+      const s = inputs[key];
+      const a = pairA[key];
+      const b = pairB[key];
+      const d = pairD[key];
+      const sval = s && s.value !== '' ? Number(s.value) : 0;
+      if (a) a.value = formatForInput(sval, getPrecision());
+      if (b) b.value = '';
+      if (d) d.value = '';
+    }
+    // trigger a global update using hartree A and B (or zeros)
+    const jA = toJoulesPerParticle(Number(pairA['hartree'].value||0),'hartree');
+    const jB = toJoulesPerParticle(Number(pairB['hartree'].value||0),'hartree');
+    updateAllPairFromJ(jA, jB, null);
+  } else {
+    // switching back to single: set single inputs to the current difference value
+    // prefer hartree difference as seed
+    const jA = toJoulesPerParticle(Number(pairA['hartree'].value||0),'hartree');
+    const jB = toJoulesPerParticle(Number(pairB['hartree'].value||0),'hartree');
+    const jD = jA - jB;
+    const out = fromJoules(jD);
+    for (const key of Object.keys(inputs)){
+      const s = inputs[key];
+      if (!s) continue;
+      s.value = isFinite(out[key]) ? formatForInput(out[key], getPrecision()) : '';
+    }
+  }
+}
+
+if (els.diffToggle){
+  els.diffToggle.addEventListener('click', (e)=>{
+    const on = !els.diffToggle.classList.contains('active');
+    if (on) {
+      els.diffToggle.classList.add('active');
+      els.diffToggle.setAttribute('aria-pressed','true');
+    } else {
+      els.diffToggle.classList.remove('active');
+      els.diffToggle.setAttribute('aria-pressed','false');
+    }
+    setDiffMode(on);
+  });
+}
+
+// copy button wiring
+document.querySelectorAll('.copy-btn').forEach(btn=>{
+  btn.addEventListener('click', async (e)=>{
+    const unit = btn.dataset.unit;
+    let text = '';
+    if (els.diffToggle && els.diffToggle.classList.contains('active')){
+      // copy the difference value (D) if present
+      const dEl = pairD[unit];
+      text = dEl ? dEl.value : '';
+    } else {
+      const sEl = inputs[unit];
+      text = sEl ? sEl.value : '';
+    }
+    if (!text) return;
+    try{
+      await navigator.clipboard.writeText(String(text));
+      btn.classList.add('copied');
+      const old = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(()=>{ btn.classList.remove('copied'); btn.textContent = old; }, 900);
+    }catch(err){
+      // fallback: select and execCopy
+      console.warn('Clipboard write failed', err);
+      const ta = document.createElement('textarea');
+      ta.value = String(text);
+      document.body.appendChild(ta);
+      ta.select();
+      try{ document.execCommand('copy'); btn.classList.add('copied'); const old = btn.textContent; btn.textContent='Copied!'; setTimeout(()=>{btn.classList.remove('copied'); btn.textContent=old; ta.remove();},900);}catch(e){ ta.remove(); }
+    }
+  });
+});
 
 // initial seed: set hartree=1 and populate
 inputs['hartree'].value = '1';
