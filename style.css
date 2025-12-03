@@ -53,7 +53,8 @@ table{width:100%;border-collapse:collapse}
   #nm-visual-row .nm-visual{ position: static; transform: none; flex-direction:column; align-items:flex-start }
 }
 thead th{font-weight:600;text-align:left;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.03);color:var(--muted)}
-tbody td{padding:8px 0;border-bottom:1px dashed rgba(255,255,255,0.02)}
+/* remove faint dotted separators between rows for a cleaner look */
+tbody td{padding:8px 0;border-bottom:none}
 footer{margin-top:14px;color:var(--muted);font-size:13px}
 
 .copy-col{width:80px;text-align:center}
