@@ -131,24 +131,27 @@
             <td class="copy-col"><button class="copy-btn" data-unit="nm" type="button" aria-label="Copy nm"><svg xmlns="http://www.w3.org/2000/svg" height="14px" viewBox="0 -960 960 960" width="14px" fill="#e3e3e3"><path d="M360-240q-33 0-56.5-23.5T280-320v-480q0-33 23.5-56.5T360-880h360q33 0 56.5 23.5T800-800v480q0 33-23.5 56.5T720-240H360Zm0-80h360v-480H360v480ZM200-80q-33 0-56.5-23.5T120-160v-560h80v560h440v80H200Zm160-240v-480 480Z"/></svg></button></td>
           </tr>
           <tr class="divider-row"><td colspan="3"><hr class="row-rule"></td></tr>
-          <tr id="nm-visual-row">
-            <td>Spectral region</td>
-            <td>
-              <div class="nm-visual">
-                <div id="nm-region-desc" class="nm-region">&nbsp;</div>
-                <div id="nm-color-bar" class="nm-color-bar" aria-hidden="true"></div>
-              </div>
-            </td>
-            <td class="copy-col"><button class="copy-color-btn" type="button" aria-label="Copy color hex"><svg xmlns="http://www.w3.org/2000/svg" height="14px" viewBox="0 -960 960 960" width="14px" fill="#e3e3e3"><path d="M360-240q-33 0-56.5-23.5T280-320v-480q0-33 23.5-56.5T360-880h360q33 0 56.5 23.5T800-800v480q0 33-23.5 56.5T720-240H360Zm0-80h360v-480H360v480ZM200-80q-33 0-56.5-23.5T120-160v-560h80v560h440v80H200Zm160-240v-480 480Z"/></svg></button></td>
         </tbody>
       </table>
     </section>
+
+    <div class="nm-visual-container">
+      <div class="nm-visual-bottom" aria-hidden="false">
+        <div class="nm-visual">
+          <label class="precision-text" for="nm-visual">Spectral region</label>
+          <div id="nm-region-desc" class="nm-region">&nbsp;</div>
+          <div id="nm-color-bar" class="nm-color-bar" aria-hidden="true"></div>
+          <button class="copy-color-btn" type="button" aria-label="Copy color hex" style="margin-left:8px"><svg xmlns="http://www.w3.org/2000/svg" height="14px" viewBox="0 -960 960 960" width="14px" fill="#e3e3e3"><path d="M120-120v-190l358-358-58-56 58-56 76 76 124-124q5-5 12.5-8t15.5-3q8 0 15 3t13 8l94 94q5 6 8 13t3 15q0 8-3 15.5t-8 12.5L705-555l76 78-57 57-56-58-358 358H120Zm80-80h78l332-334-76-76-334 332v78Zm447-410 96-96-37-37-96 96 37 37Zm0 0-37-37 37 37Z"/></svg></button>
+        </div>
+      </div>
+    </div>
+
 
     <!-- precision control (bottom) -->
     <div class="precision-bottom">
       <div class="precision-row">
         <div class="precision-inline">
-          <label class="precision-text" for="precision">Significant figures:</label>
+          <label class="precision-text" for="precision">Significant figures</label>
           <div class="precision-controls">
             <button id="precision-decrement" class="stepper-btn" type="button" aria-label="Decrease precision">−</button>
             <input id="precision" type="number" min="1" max="30" step="1" value="10" />
@@ -163,7 +166,6 @@
           </svg>
         </a>
       </div>
-    </div>
 
     <!-- <footer>
       <p></p>
