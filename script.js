@@ -186,6 +186,8 @@ function updateAllFromHartree(h, skipUnit = null){
     el.value = isFinite(v) ? formatForInput(v, prec) : '';
   }
   isUpdating = false;
+  // update nm color/region based on the rendered nm value
+  try{ updateNmColorFromValue(out['nm']); }catch(e){}
 }
 
 function updateAllPairFromHartree(hA, hB, skipId = null){
@@ -204,7 +206,111 @@ function updateAllPairFromHartree(hA, hB, skipId = null){
     if (dEl) dEl.value = isFinite(outD_all[key]) ? formatForInput(outD_all[key], prec) : '';
   }
   isUpdating = false;
+  // update nm color/region using the difference value
+  try{ updateNmColorFromValue(outD_all['nm']); }catch(e){}
 }
+
+// Convert wavelength in nm to approximate RGB. Returns {r,g,b} 0-255 or null if outside visible range
+function wavelengthToRGB(wavelength){
+  const wl = Number(wavelength);
+  if (!isFinite(wl) || wl <= 0) return null;
+  // visible range approx 380..780 nm
+  if (wl < 380 || wl > 780) return null;
+  let r=0,g=0,b=0;
+  if (wl >= 380 && wl < 440){ r = -(wl - 440) / (440-380); g = 0; b = 1; }
+  else if (wl >= 440 && wl < 490){ r = 0; g = (wl - 440) / (490-440); b = 1; }
+  else if (wl >= 490 && wl < 510){ r = 0; g = 1; b = -(wl - 510) / (510-490); }
+  else if (wl >= 510 && wl < 580){ r = (wl - 510) / (580-510); g = 1; b = 0; }
+  else if (wl >= 580 && wl < 645){ r = 1; g = -(wl - 645) / (645-580); b = 0; }
+  else if (wl >= 645 && wl <= 780){ r = 1; g = 0; b = 0; }
+  // intensity factor near vision limits
+  let factor = 1;
+  if (wl < 420) factor = 0.3 + 0.7 * (wl - 380) / (420 - 380);
+  else if (wl > 700) factor = 0.3 + 0.7 * (780 - wl) / (780 - 700);
+  // apply gamma correction-like curve
+  const gamma = 0.8;
+  const R = Math.round(Math.max(0, Math.min(1, Math.pow(r * factor, gamma))) * 255);
+  const G = Math.round(Math.max(0, Math.min(1, Math.pow(g * factor, gamma))) * 255);
+  const B = Math.round(Math.max(0, Math.min(1, Math.pow(b * factor, gamma))) * 255);
+  return {r:R,g:G,b:B};
+}
+
+function rgbToHex(rgb){
+  if (!rgb) return '#000000';
+  const toHex = v => ('0' + v.toString(16)).slice(-2);
+  return `#${toHex(rgb.r)}${toHex(rgb.g)}${toHex(rgb.b)}`;
+}
+
+function regionFromWavelength(wl){
+  const v = Number(wl);
+  if (!isFinite(v) || v <= 0) return '—';
+  if (v <= 0.01) return 'Gamma ray (γ)';
+  if (v <= 0.10) return 'Hard X-ray (HX)';
+  if (v <= 10) return 'Soft X-ray (SX)';
+  if (v <= 121) return 'Extreme ultraviolet (EUV)';
+  if (v <= 200) return 'Far ultraviolet (FUV)';
+  if (v <= 300) return 'Middle ultraviolet (MUV)';
+  if (v <= 380) return 'Near ultraviolet (NUV)';
+  if (v <= 450) return 'Violet';
+  if (v <= 495) return 'Blue';
+  if (v <= 570) return 'Green';
+  if (v <= 590) return 'Yellow';
+  if (v <= 620) return 'Orange';
+  if (v <= 750) return 'Red';
+  if (v <= 1400) return 'Near infrared (NIR)';
+  if (v <= 3000) return 'Short-wavelength infrared (SWIR)';
+  if (v <= 8000) return 'Mid-wavelength infrared (MWIR)';
+  if (v <= 15000) return 'Long-wavelength infrared (LWIR)';
+  if (v <= 1e6) return 'Far infrared (FIR)';
+  if (v <= 1e7) return 'Extremely high frequency (EHF)';
+  if (v <= 1e8) return 'Super high frequency (SHF)';
+  if (v <= 1e9) return 'Ultra high frequency (UHF)';
+
+  return 'Radio wave';
+}
+
+function updateNmColorFromValue(val){
+  const descEl = document.getElementById('nm-region-desc');
+  const bar = document.getElementById('nm-color-bar');
+  let nm = Number(val);
+  if (!isFinite(nm)){
+    // try to read visible inputs if val missing
+    const cur = (els.diffToggle && els.diffToggle.classList.contains('active')) ? (pairD['nm'] && Number(pairD['nm'].value)) : (inputs['nm'] && Number(inputs['nm'].value));
+    nm = Number.isFinite(cur) ? cur : NaN;
+  }
+  const region = regionFromWavelength(nm);
+  descEl.textContent = region === '—' ? 'Outside visible' : region;
+  const rgb = wavelengthToRGB(nm);
+  const hex = rgb ? rgbToHex(rgb) : '#000000';
+  if (bar) bar.style.background = hex;
+  // store current hex for copying
+  const copyBtn = document.querySelector('.copy-color-btn');
+  if (copyBtn) copyBtn.dataset.hex = hex;
+}
+
+// wire up copy button for color hex
+document.querySelectorAll('.copy-color-btn').forEach(btn => {
+  btn.addEventListener('click', async (e) => {
+    // determine current nm (diff mode uses D)
+    const hex = btn.dataset.hex || (() => {
+      const cur = (els.diffToggle && els.diffToggle.classList.contains('active')) ? (pairD['nm'] && Number(pairD['nm'].value)) : (inputs['nm'] && Number(inputs['nm'].value));
+      const rgb = wavelengthToRGB(Number(cur));
+      return rgb ? rgbToHex(rgb) : '#000000';
+    })();
+    try{
+      await navigator.clipboard.writeText(String(hex));
+      btn.classList.add('copied');
+      const oldHTML = btn.innerHTML;
+      // show the hex temporarily while preserving the icon/html so it can be restored
+      btn.innerHTML = '<span class="copied-text">' + String(hex) + '</span>';
+      setTimeout(()=>{ btn.classList.remove('copied'); btn.innerHTML = oldHTML; },900);
+    }catch(err){
+      console.warn('Clipboard write failed', err);
+      const ta = document.createElement('textarea'); ta.value = String(hex); document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); btn.classList.add('copied'); const oldHTML = btn.innerHTML; btn.innerHTML = '<span class="copied-text">' + String(hex) + '</span>'; setTimeout(()=>{btn.classList.remove('copied'); btn.innerHTML=oldHTML; ta.remove();},900);}catch(e){ ta.remove(); }
+    }
+  });
+});
 
 function getPrecision(){
   const rawPrec = Number(els.precision.value);

@@ -34,6 +34,24 @@ input[type=number]::-webkit-inner-spin-button{
 }
 #results h2{margin:0 0 8px}
 table{width:100%;border-collapse:collapse}
+
+/* keep nm visual row columns stable without locking the whole table
+  set widths on the nm visual row cells so the spectral bar doesn't shift
+  when other rows toggle between single/pair layouts */
+#nm-visual-row > td:first-child { width: 36%; }
+#nm-visual-row > td:nth-child(2) { width: 50%; }
+#nm-visual-row > td:nth-child(3) { width: 14%; }
+
+/* Lock the visual region content inside its cell so row above reflows independently.
+  Use centered anchoring (left:50% + translateX) so the visual stays horizontally centered
+  relative to its cell even when sibling columns change width. */
+#nm-visual-row td:nth-child(2){ position: relative; }
+#nm-visual-row .nm-visual{ position: absolute; left: 0; top: 50%; transform: translateY(-50%); display:flex; align-items:center; gap:12px; width: auto; max-width: calc(100% - 12px); }
+
+@media (max-width:720px){
+  #nm-visual-row td:nth-child(2){ position: static; }
+  #nm-visual-row .nm-visual{ position: static; transform: none; flex-direction:column; align-items:flex-start }
+}
 thead th{font-weight:600;text-align:left;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.03);color:var(--muted)}
 tbody td{padding:8px 0;border-bottom:1px dashed rgba(255,255,255,0.02)}
 footer{margin-top:14px;color:var(--muted);font-size:13px}
@@ -104,6 +122,13 @@ footer{margin-top:14px;color:var(--muted);font-size:13px}
 /* pair layout: align A - B - D inline; allow variant where only D is shown */
 .pair{display:flex;align-items:center;gap:6px}
 
+.row-rule{border:0;height:1px;background:linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.06), rgba(255,255,255,0.03));margin:10px 0}
+.nm-visual{display:flex;flex-direction:row;align-items:center;gap:12px}
+.nm-region{font-size:0.95rem;color:var(--muted);min-width:110px}
+.nm-color-bar{width:140px;height:18px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:#000}
+.copy-color-btn{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text);padding:6px 10px;border-radius:6px;cursor:pointer}
+.copy-color-btn.copied{background:var(--accent);color:#042017;border-color:transparent}
+
 @media (max-width:520px){form{flex-direction:column}label{min-width:unset}}
 
 /* Mobile adjustments: avoid vertical centering which can hide header and block scrolling */
@@ -113,4 +138,5 @@ footer{margin-top:14px;color:var(--muted);font-size:13px}
   .container{ margin-top:0; }
   .precision-row{flex-direction:column;align-items:flex-start}
   .gh-btn{margin-top:8px}
+  .nm-visual{flex-direction:column;align-items:flex-start}
 }
