@@ -449,9 +449,9 @@ document.querySelectorAll('.copy-btn').forEach(btn=>{
     try{
       await navigator.clipboard.writeText(String(text));
       btn.classList.add('copied');
-      const old = btn.textContent;
-      btn.textContent = 'Copied!';
-      setTimeout(()=>{ btn.classList.remove('copied'); btn.textContent = old; }, 900);
+      const oldHTML = btn.innerHTML;
+      btn.innerHTML = '<span class="copied-text">Copied!</span>';
+      setTimeout(()=>{ btn.classList.remove('copied'); btn.innerHTML = oldHTML; }, 900);
     }catch(err){
       // fallback: select and execCopy
       console.warn('Clipboard write failed', err);
@@ -459,7 +459,13 @@ document.querySelectorAll('.copy-btn').forEach(btn=>{
       ta.value = String(text);
       document.body.appendChild(ta);
       ta.select();
-      try{ document.execCommand('copy'); btn.classList.add('copied'); const old = btn.textContent; btn.textContent='Copied!'; setTimeout(()=>{btn.classList.remove('copied'); btn.textContent=old; ta.remove();},900);}catch(e){ ta.remove(); }
+      try{
+        document.execCommand('copy');
+        btn.classList.add('copied');
+        const oldHTML = btn.innerHTML;
+        btn.innerHTML = '<span class="copied-text">Copied!</span>';
+        setTimeout(()=>{ btn.classList.remove('copied'); btn.innerHTML = oldHTML; ta.remove(); },900);
+      }catch(e){ ta.remove(); }
     }
   });
 });
