@@ -112,7 +112,7 @@ function formatNumber(v, precision){
   const abs = Math.abs(v);
   const sig = Math.max(1, Math.min(30, Math.round(Number(precision))));
   // For very small/large numbers prefer exponential with sig significant digits
-  if ((abs !== 0 && (abs < 1e-6 || abs >= 1e8))){
+  if ((abs !== 0 && (abs < 1e-4 || abs >= 1e5))){
     return Number(v).toExponential(Math.max(0, sig - 1));
   }
   // Use toPrecision for significant-digit formatting, then trim trailing zeros
@@ -128,7 +128,7 @@ function formatForInput(v, precision){
   if (!isFinite(v)) return '';
   const abs = Math.abs(v);
   const sig = Math.max(1, Math.min(30, Math.round(Number(precision))));
-  if ((abs !== 0 && (abs < 1e-6 || abs >= 1e8))){
+  if ((abs !== 0 && (abs < 1e-4 || abs >= 1e5))){
     // exponential with specified significant digits
     return Number(v).toExponential(Math.max(0, sig - 1));
   }
